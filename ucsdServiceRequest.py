@@ -16,8 +16,8 @@ import json
 from prettytable import PrettyTable
 
 # --- Variables ---
-uscdServer = "ukidcv-cucsd.cisco.com"
-headers = {"X-Cloupia-Request-Key":"C413E849B0384BDD8EE38EEDA9CB6383"}
+uscdServer = ""
+headers = {"X-Cloupia-Request-Key":""}
 userAPIGetTabularReport = "/app/api/rest?opName=userAPIGetTabularReport&opData=%7Bparam0:%226%22,param1:%22%22,param2:%22SERVICE-REQUESTS-T10%22%7D"
 userAPIGetWorkflowStatus = "/app/api/rest?formatType=json&opName=userAPIGetWorkflowStatus&opData=%7Bparam0%3A43%7D"
 
