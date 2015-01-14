@@ -15,10 +15,8 @@ include_once "ucsd_api.php";
 <!doctype html>
 <html><head>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-<title>Request Catalog Item</title>
-
-<!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<title>Request Catalog Item</title>
 </head>
 <body>
 <h1>Customise Service Request</h1>

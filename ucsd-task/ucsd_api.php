@@ -22,7 +22,7 @@ function ucsd_api_call ($query_string) {
 }
 
 function ucsd_input_supported($type) {
-	if (($type == "gen_text_input") || ($type == "vm") || ($type == "vCPUCount") || ($type == 'memSizeMB')) {
+	if (($type == "gen_text_input") || ($type == "vm") || ($type == "vCPUCount") || ($type == 'memSizeMB') || ($type == "no-multiVM")) {
 		return true;
 	}
 	return false;
@@ -39,11 +39,26 @@ function return_custom_form($input) {
 			return create_memory_picker($input);
 		case vCPUCount:
 			return create_cpu_picker($input);
+		case multiVM:
+			return create_multi_vm_picker($input);
 		default:
 			return "Unsupported field type: ".$type;
-
 	}
 }
+
+function create_multi_vm_picker($input) {
+	$name = 'multi_'.$input->{'name'};
+	$query_string = 'opName=userAPIGetTabularReport&opData='.rawurlencode('{param0:"0",param1:"All Clouds",param2:"VMS-T0"}');
+	$response = ucsd_api_call($query_string)->{'serviceResult'};
+	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td>';
+	$out .= '<td><select name="'.$name.'[]" id="'.$name.'" multiple>';
+	foreach ($response->{'rows'} as $row) {
+		$out .= '<option value="'.$row->{'VM_ID'}.'">'.$row->{'VM_Name'}.'</option>';
+	}
+	$out .= '</select><br />Hint: Cold ctrl (windows/linux) or cmd (Mac) to select multiple items</td></tr>';
+	return $out."\n";
+}
+
 
 function create_cpu_picker($input) {
 	$name = $input->{'name'};
