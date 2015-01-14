@@ -32,7 +32,7 @@ $catalog_items = ucsd_api_call($query_string);
 foreach ($catalog_items->{'serviceResult'}->{'rows'} as $row) {
 	# For now only pull out advanced catalog items:
 	# Lazily done as a retcon of old code - could request directly (probably)
-	if (($row->{'Catalog_Type'} == "Advanced") && ($row->{'Catalog_Name'} == $_GET['catalog'])) {
+	if (($row->{'Catalog_Type'} == "Advanced") && ($row->{'Catalog_Name'} == $_GET['catalog']) && ($_GET['id'] == $row->{'Catalog_ID'})) {
 		print '<div style="border: 1px solid #000080; margin-left: 10%; margin-right: 10%; padding: 1.5em; margin-bottom: 2em;">';
 		# Print the icon and name:
 		print '<h3><img src="http://10.52.208.38/'.$row->{'Icon'}.'" /> '.$row->{'Catalog_Name'}.'</h3>'."\n";

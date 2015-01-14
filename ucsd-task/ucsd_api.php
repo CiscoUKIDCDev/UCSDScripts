@@ -15,7 +15,7 @@ function ucsd_api_call ($query_string) {
 	$ucsd_api_url = 'http://10.52.208.38/app/api/rest?';
 	# cURL standard command:
 	$curl_cmd = 'http_proxy="" curl -X "GET" -s ';
-	$ucsd_api_cmd = ' -H "X-Cloupia-Request-Key: D47D6DD47B99423D9E499848DDF6D0A9"';
+	$ucsd_api_cmd = ' -H "X-Cloupia-Request-Key: '.$ucsd_api_key.'"';
 	$cmd = $curl_cmd.'"'.$ucsd_api_url.$query_string.'"'.$ucsd_api_cmd;
 	$response = `http_proxy="" $cmd`;
 	return json_decode($response);
@@ -67,13 +67,13 @@ function create_plain_text_form($input) {
 	}
 	$out .= '</td></tr>';
 	
-	return $out;
+	return $out."\n";
 }
 
 function create_memory_picker($input) {
 	$name = $input->{'name'};
 	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td>';
-	$out .= '<td><select name="'.$name.'">';
+	$out .= '<td><select name="'.$name.'" id="'.$name.'">';
 	$out .= '<option value="256">256 MiB</option>';
 	$out .= '<option value="512">512 MiB</option>';
 	# Lazy...
@@ -82,7 +82,7 @@ function create_memory_picker($input) {
 	}
 	$out .= '<option value="16384">16 GiB</option>';
 	$out .= '</select></td></tr>';
-	return $out;
+	return $out."\n";
 
 }
 function create_vm_picker ($input) {
@@ -90,24 +90,24 @@ function create_vm_picker ($input) {
 	$query_string = 'opName=userAPIGetTabularReport&opData='.rawurlencode('{param0:"0",param1:"All Clouds",param2:"VMS-T0"}');
 	$response = ucsd_api_call($query_string)->{'serviceResult'};
 	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td>';
-	$out .= '<td><select name="'.$name.'">';
+	$out .= '<td><select name="'.$name.'" id="'.$name.'">';
 	foreach ($response->{'rows'} as $row) {
 		$out .= '<option value="'.$row->{'VM_ID'}.'">'.$row->{'VM_Name'}.'</option>';
 	}
 	$out .= '</select></td></tr>';
-	return $out;
+	return $out."\n";
 }
 
 
 # Creates a number picker (e.g. how many VMs)
 function create_number_picker ($name, $start, $end) {
 	$out = '';
-	$out .= '<select name="'.$name.'">';
+	$out .= '<select name="'.$name.'" id="'.$name.'">';
 	for ($i = $start; $i <=  $end; $i++) {
 		$out .= '<option value="'.$i.'">'.$i.'</option>';
 	}
 	$out .= '</select>';
-	return $out;
+	return $out."\n";
 }
 
 ?>

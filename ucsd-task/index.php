@@ -30,12 +30,11 @@ $query_string = 'opName=userAPIGetAllCatalogs&opData=%7B%&D';
 $catalog_items = ucsd_api_call($query_string);
 
 print '<table rows="3" style="margin-left: 10%; border: 1px solid #000080; margin-right: 10%; width: 80%;">'."\n";
-
+$last_category = '';
 # Loop through them all
 foreach ($catalog_items->{'serviceResult'}->{'rows'} as $row) {
 	# For now only pull out advanced catalog items:
 	if ($row->{'Catalog_Type'} == "Advanced") {
-#		print var_dump($row);
 		# Assume this catalog item is both supported and clear the output buffer:
 		$supported = 1;
 		# Get catalog item detail:
@@ -51,10 +50,17 @@ foreach ($catalog_items->{'serviceResult'}->{'rows'} as $row) {
 				continue(2);
 			}
 		}
+		$category = $row->{'Folder'};
+		if ($category != $last_category) {
+			$last_category = $category;
+			# I'm unapologetically anal about this...
+			$category = preg_replace('/VMWare/', 'VMware', $category);
+			print '<tr><td colspan="3"><h2>Category: '.$category.'</h2></td></tr>';
+		}
 		# Print the icon and name:
-		print '<tr><td>'."\n";
+		print '<tr><td style="padding-top: 1em; vertical-align: middle; text-align: center">'."\n";
 		print '<img src="http://10.52.208.38/'.$row->{'Icon'}.'" /></td>'."\n";
-		print '<td><h3 style="padding: 0; margin: 0;">'.$row->{'Catalog_Name'}.'</h3><p style="margin: 0; padding: 0;">'."\n";
+		print '<td style="padding-top: 1em;"><h3 style="padding: 0; margin: 0;">'.$row->{'Catalog_Name'}.'</h3><p style="margin: 0; padding: 0;">'."\n";
 		if ($row->{'Catalog_Description'} != '') {
 			print $row->{'Catalog_Description'};
 		}
@@ -62,8 +68,8 @@ foreach ($catalog_items->{'serviceResult'}->{'rows'} as $row) {
 			print 'No description available for this catalog entry';
 		}
 		print '</p></td>'."\n";
-		print '<td style="padding-left: 1em; vertical-align: middle; text-align: center;">'."\n";
-		print '<a href="service_info?catalog='.htmlspecialchars($row->{'Catalog_Name'}).'" style="font-weight: bold; ">&gt;&gt;Request Service</a>'."\n";
+		print '<td style="padding-left: 1em; vertical-align: middle; text-align: center; min-width: 15em;">'."\n";
+		print '<a href="service_info?catalog='.htmlspecialchars($row->{'Catalog_Name'}).'&amp;id='.htmlspecialchars($row->{'Catalog_ID'}).'" style="font-weight: bold; ">&gt;&gt;Request Service</a>'."\n";
 		
 		print '</td></tr>'."\n";
 	}
