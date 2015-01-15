@@ -3,31 +3,40 @@
 Copyright Matt Day
 
 Copying and distribution of this file, with or without modification,
-are permitted in any medium to Cisco Sytems Employees without royalty
+are permitted in any medium to Cisco Systems Employees without royalty
 provided the copyright notice and this notice are preserved.  This
 file is offered as-is, without any warranty.
 */
 
+# Not really an API calling function, more of a place that chucks in REST calls to UCSD
+# and holds the API key etc
 function ucsd_api_call ($query_string) {
 	# UCSD API Key
 	$ucsd_api_key = 'D47D6DD47B99423D9E499848DDF6D0A9';
 	# URL for requests
 	$ucsd_api_url = 'http://10.52.208.38/app/api/rest?';
-	# cURL standard command:
+	# cURL standard command (should replace with a library call):
 	$curl_cmd = 'http_proxy="" curl -X "GET" -s ';
 	$ucsd_api_cmd = ' -H "X-Cloupia-Request-Key: '.$ucsd_api_key.'"';
 	$cmd = $curl_cmd.'"'.$ucsd_api_url.$query_string.'"'.$ucsd_api_cmd;
 	$response = `http_proxy="" $cmd`;
+	# Just return the raw JSON - will return 'null' if error in parsing, calling function should
+	# take care of this
 	return json_decode($response);
 }
 
+# A custom task in UCSD may require 1 or more inputs, this returns if they are supported or not
+# Lazily written but does the job
 function ucsd_input_supported($type) {
-	if (($type == "gen_text_input") || ($type == "vm") || ($type == "vCPUCount") || ($type == 'memSizeMB') || ($type == "no-multiVM")) {
+	if (($type == "gen_text_input") || ($type == "vm") || ($type == "vCPUCount")
+		|| ($type == 'memSizeMB') || ($type == "no-multiVM") || ($type == 'nocatalog')) {
 		return true;
 	}
 	return false;
 }
 
+# Returns an input form for each input type - for example returning a text input form for the UCSD
+# gen_text_input type
 function return_custom_form($input) {
 	$type = $input->{'type'};
 	switch ($type) {
@@ -41,11 +50,32 @@ function return_custom_form($input) {
 			return create_cpu_picker($input);
 		case multiVM:
 			return create_multi_vm_picker($input);
+		case catalog:
+			return create_catalog_picker($input);
 		default:
-			return "Unsupported field type: ".$type;
+			return "<tr><td>".$input->{'label'}.":</td><td>Unsupported (type: ".$type.")</td></tr>";
 	}
 }
 
+# Return a list of standard catalog items (i.e. VMs that can be created)
+function create_catalog_picker($input) {
+	$query_string = 'opName=userAPIGetAllCatalogs&opData=%7B%&D';
+	$response = ucsd_api_call($query_string)->{'serviceResult'};
+	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td>';
+	$out .= '<td><select name="'.$name.'[]" id="'.$name.'">';
+	foreach ($response->{'rows'} as $row) {
+		if ($row->{'Catalog_Type'} == "Standard") {
+			$out .= '<option value="'.$row->{'Catalog_ID'}.'">'.$row->{'Catalog_Name'}.'</option>';
+		}
+	}
+	$out .= '</select>';
+	return $out."\n";
+
+}
+
+# Return a list of VMs available within UCSD with the ability to select multiple items
+# FIME: Currently broken (needs corresponding code in submit_api_request.php - perhaps
+# split out as a function here)
 function create_multi_vm_picker($input) {
 	$name = 'multi_'.$input->{'name'};
 	$query_string = 'opName=userAPIGetTabularReport&opData='.rawurlencode('{param0:"0",param1:"All Clouds",param2:"VMS-T0"}');
@@ -59,21 +89,22 @@ function create_multi_vm_picker($input) {
 	return $out."\n";
 }
 
-
+# Return a list of CPU options - 1-8
 function create_cpu_picker($input) {
 	$name = $input->{'name'};
 	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td><td>';
 	$out .= create_number_picker($name, 1, 8);
 	$out .= '</td></tr>';
-	
 	return $out;
 }
 
-
+# Return a plain text input in most cases - as a kludge return a drop-down form to present a VM count
+# (could probably be done in UCSD)
 function create_plain_text_form($input) {
 	$name = $input->{'name'};
 	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td><td>';
-	# Hack for a number picker for certain tasks... Could be done with custom input on UCSD or some other way to match certain inputs
+	# Hack for a number picker for certain tasks... Could be done with custom input on UCSD or some other way to
+	# match certain inputs
 	if ((preg_match('/^Number of /', $input->{'label'}))) {
 		$out .= create_number_picker($input->{'name'}, 1, 5);
 	}
@@ -85,6 +116,7 @@ function create_plain_text_form($input) {
 	return $out."\n";
 }
 
+# Memory picker for various sizes of mb
 function create_memory_picker($input) {
 	$name = $input->{'name'};
 	$out = '<tr><td><label for="'.$name.'">'.$input->{'label'}.':&nbsp; &nbsp;</label></td>';
@@ -100,6 +132,8 @@ function create_memory_picker($input) {
 	return $out."\n";
 
 }
+
+# Single VM picker - lists all VMs in UCSD and allows a single choice
 function create_vm_picker ($input) {
 	$name = $input->{'name'};
 	$query_string = 'opName=userAPIGetTabularReport&opData='.rawurlencode('{param0:"0",param1:"All Clouds",param2:"VMS-T0"}');
