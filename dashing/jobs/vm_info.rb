@@ -25,10 +25,12 @@ last_cost = 0
 SCHEDULER.every '20s' do
 	# Lazy way to get this, should use libraries rather than syscalls to curl...
 	vm_list = JSON.parse(`http_proxy="" proxy="" curl -s -X "GET" "http://10.52.208.38/app/api/rest?opName=userAPIGetTabularReport&opData=%7Bparam0:%220%22,param1:%22All%20Clouds%22,param2:%22VMS-T0%22%7D" -H "x-cloupia-request-key: D47D6DD47B99423D9E499848DDF6D0A9"`)
+
 	
 	vm_count = 1
 	counted_vm_count = 1
 	total_cpu = 0
+	vm_powered_on = 0
 
 	# Iterate through list of VMs procured from above REST call
 	vm_list["serviceResult"]["rows"].each do |vm|
@@ -48,10 +50,13 @@ SCHEDULER.every '20s' do
 				counted_vm_count += 1
 			end
 		end
+		if (vm["Power_State"] == "ON") then
+			vm_powered_on += 1
+		end
 		vm_count += 1
 	end
 	# Calculate mean CPU average and how many VMs are powered up (or at least giving us stats)
-	powered_on_percent = counted_vm_count
+	powered_on_percent = vm_powered_on
 	cpu_average = (total_cpu / counted_vm_count)
 	# Round to nearest whole decimal, Ruby uses floating point logic and it can go wrong...
 	cpu_average = cpu_average.round()
