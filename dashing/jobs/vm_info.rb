@@ -68,7 +68,7 @@ SCHEDULER.every '20s' do
 	send_event('convergence', points: points)
 
 	# Calculate rough cost to 2 decimal places - should sprintf this to x.xx
-	current_cost = (vm_cost_per_hour * counted_vm_count).round(2)
+	current_cost = ((vm_cost_per_hour * vm_powered_on) + (powered_off_vm_cost_per_hour * (vm_count - vm_powered_on))).round(2)
 	send_event('valuation', { current: current_cost, last: last_cost })
 	send_event('karma', { current: current_cost, last: last_cost })
 
