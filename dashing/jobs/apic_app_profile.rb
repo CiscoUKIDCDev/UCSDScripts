@@ -4,8 +4,8 @@
 # provided the copyright notice and this notice are preserved. This
 # file is offered as-is, without any warranty.
 
-# This script queries UCS Director at specific intervals to count the VMs across all clouds
-# and list them by operating system. Takes a while to run.
+# This script pulls all the application profiles configured across the ACI infrastructure
+# and reports them in a nice table 
 
 require 'net/http'
 require 'json'
@@ -34,25 +34,22 @@ SCHEDULER.every '30s' do
 		status = Hash.new(0)
 		# Loop through all tenants
 		response["serviceResult"]["rows"].each do |app|
-			#if ((app["_report_id"].include? "matday") && (app["Application"].match(/^t3_.*/))) then
-			#app_list[app["Application"]] = ""
-			#end
+			# UCS Director returns the tenant name in a strange way, parse this out with some
+			# regex magic
                         tenant = app["_report_id"][/tenantName=='(.*?)'/,1]
 			# Don't include common tenant
 			if (tenant != "common") then
-	                        app_list[app["Application"]] = tenant
+				# Truncate application name for display purposes:
 				app_name = app["Application"]
 				if (app_name.length > 15) then
 					app_name = app_name[0,12] + "..."
 				end
-				status[app["Application"]] = {value: app_name, label: tenant }
+				# Store it in a hash to be fired off later (tenant + appName):
+				status[app["Application"] + tenant] = {value: app_name, label: tenant }
 			end
 		end
-		# Sort apps by %
-#		app_list.keys.sort_by { |key| app_list[key] }.reverse.each do |key|
-#			status[key] = { label: key, value: (app_list[key].to_i) }
-#		end
 
+		# Send event to dashing dashboard:
 		send_event('apic_app_list', { items: status.values } )
 	end
 end

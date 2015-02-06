@@ -4,8 +4,8 @@
 # provided the copyright notice and this notice are preserved. This
 # file is offered as-is, without any warranty.
 
-# This script queries UCS Director at specific intervals to count the VMs across all clouds
-# and list them by operating system. Takes a while to run.
+# This script grabs a sorted list of tenants from UCS Director and returns the top 'n'
+# sorted by health (worst to best)
 
 require 'net/http'
 require 'json'
@@ -38,17 +38,19 @@ SCHEDULER.every '30s' do
 		# Loop through all tenants
 		response["serviceResult"]["rows"].each do |tenant|
 			tenant_list[tenant["Tenant_Name"]] = tenant["Health_Score"]
-			tenant["Tenant_Name"] + " (" + tenant["Health_Score"] +"%)\n"
 		end
 		# Sort tenants by %
 		shown = 0
 		tenant_list.keys.sort_by { |key| tenant_list[key] }.reverse.each do |key|
 			status[key] = { label: key, value: (tenant_list[key].to_i) }
 			shown += 1
+			# Only show top 'n'
 			if (shown == show) then
 				break
 			end
 		end
+
+		# Send event to dashing:
 		send_event('apic_tenant_list', { items: status.values } )
 	end
 end
