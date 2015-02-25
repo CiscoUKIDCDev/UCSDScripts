@@ -16,6 +16,25 @@ include_once "ucsd_api.php";
 <html><head>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript"></script>
+<script src="jquery.caret.js" type="text/javascript"></script>
+<script src="jquery.ipaddress.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+	$('.ip').ipaddress();
+});
+</script>
+<style>
+.ip_container {
+	  border: 1px inset #999;
+}
+.ip_octet {
+	  border: 0;
+	    text-align: center;
+	      width: 2em;
+}
+
+</style>
 <title>Request Catalog Item</title>
 </head>
 <body>

@@ -108,12 +108,24 @@ function create_plain_text_form($input) {
 	if ((preg_match('/^Number of /', $input->{'label'}))) {
 		$out .= create_number_picker($input->{'name'}, 1, 5);
 	}
+	# YAHack for IP addresses
+	else if ((preg_match('/Gateway IP$/', $input->{'label'}))) {
+		$out .= create_ip_address_field($input->{'name'});
+	}
+	else if ((preg_match('/^Prefix for subnets/', $input->{'label'}))) {
+		$out .= create_subnet_picker($input->{'name'});
+	}
 	else {
 		$out .= '<input type="text" name="'.$input->{'name'}.'" id="'.$input->{'name'}.'" />'."\n";
 	}
 	$out .= '</td></tr>';
 	
 	return $out."\n";
+}
+
+function create_ip_address_field ($name) {
+	$out = '<input type="text" name="'.$name.'" id="'.$name.'" class="ip" />';
+	return $out;
 }
 
 # Memory picker for various sizes of mb
@@ -144,6 +156,20 @@ function create_vm_picker ($input) {
 		$out .= '<option value="'.$row->{'VM_ID'}.'">'.$row->{'VM_Name'}.'</option>';
 	}
 	$out .= '</select></td></tr>';
+	return $out."\n";
+}
+
+function create_subnet_picker ($name) {
+	$out = ''; $start = 1; $end = 32;
+	$out .= '<select name="'.$name.'" id="'.$name.'">';
+	for ($i = $start; $i <=  $end; $i++) {
+		$selected = '';
+		if ($i == 24) {
+			$selected = ' selected';
+		}
+		$out .= '<option'.$selected.' value="'.$i.'">/'.$i.'</option>';
+	}
+	$out .= '</select>';
 	return $out."\n";
 }
 
