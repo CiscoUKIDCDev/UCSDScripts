@@ -15,3 +15,6 @@ This is a python script that uses the UCSD API to pull back a list of the servic
 
 ###  ucsdServiceRequestExtra.py
 This is a python script that pretty much does the same as ucsdServiceRequest.py. It exists as originally when I started to use the main API the status returned wasn’t as informative as it is now so I needed to make use of an additional API to achieve the same result. 
+
+## Additional Examples
+Some other examples that have not been migrated to this repo yet can be found here - https://github.com/clijockey/Cloupiascripts
